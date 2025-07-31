@@ -1,0 +1,61 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "DenyIncorrectEncryptionHeader",
+            "Effect": "Deny",
+            "Principal": "*",
+            "Action": "s3:PutObject",
+            "Resource": "arn:aws:s3:::bstream374/*",
+            "Condition": {
+                "StringNotEquals": {
+                    "s3:x-amz-server-side-encryption": "aws:kms"
+                }
+            }
+        },
+        {
+            "Sid": "DenyUnencryptedObjectUploads",
+            "Effect": "Deny",
+            "Principal": "*",
+            "Action": "s3:PutObject",
+            "Resource": "arn:aws:s3:::bstream374/*",
+            "Condition": {
+                "Null": {
+                    "s3:x-amz-server-side-encryption": "true"
+                }
+            }
+        },
+        {
+            "Sid": "EnforceKMSKey",
+            "Effect": "Deny",
+            "Principal": "*",
+            "Action": "s3:PutObject",
+            "Resource": "arn:aws:s3:::bstream374/*",
+            "Condition": {
+                "StringNotLikeIfExists": {
+                    "s3:x-amz-server-side-encryption-aws-kms-key-id": "arn:aws:kms:ca-central-1:986707059896:key/1cf23784-7b64-4cb4-9156-51736567e162"
+                }
+            }
+        },
+        {
+            "Sid": "AllowBackupAccess",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": [
+                    "arn:aws:iam::986707059896:user/ytube",
+                    "arn:aws:iam::986707059896:role/aws-service-role/organizations.amazonaws.com/AWSServiceRoleForOrganizations"
+                ]
+            },
+            "Action": [
+                "s3:PutObject",
+                "s3:GetObject",
+                "s3:ListBucket",
+                "s3:DeleteObject"
+            ],
+            "Resource": [
+                "arn:aws:s3:::bstream374",
+                "arn:aws:s3:::bstream374/*"
+            ]
+        }
+    ]
+}

@@ -1,0 +1,92 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudWatch Alarms for KMS Key Monitoring'
+
+Parameters:
+  KMSKeyId:
+    Type: String
+    Description: The ID of your KMS key
+  
+  NotificationEmail:
+    Type: String
+    Description: Email address to receive alarm notifications
+
+Resources:
+  KMSAlarmTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: KMS-Alerts
+      Subscription:
+        - Endpoint: !Ref NotificationEmail
+          Protocol: email
+
+  KeyUsageAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${KMSKeyId}-Usage-Alert"
+      AlarmDescription: Alert when KMS key usage exceeds threshold
+      MetricName: KeyUsage
+      Namespace: AWS/KMS
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1000
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: KeyId
+          Value: !Ref KMSKeyId
+      AlarmActions:
+        - !Ref KMSAlarmTopic
+
+  KeyErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${KMSKeyId}-Error-Alert"
+      AlarmDescription: Alert on KMS key operation errors
+      MetricName: KeyError
+      Namespace: AWS/KMS
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: KeyId
+          Value: !Ref KMSKeyId
+      AlarmActions:
+        - !Ref KMSAlarmTopic
+
+  KeyDeletionAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${KMSKeyId}-Deletion-Alert"
+      AlarmDescription: Alert when KMS key deletion is scheduled
+      MetricName: PendingDeletion
+      Namespace: AWS/KMS
+      Statistic: Maximum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: KeyId
+          Value: !Ref KMSKeyId
+      AlarmActions:
+        - !Ref KMSAlarmTopic
+
+  ThrottlingAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${KMSKeyId}-Throttling-Alert"
+      AlarmDescription: Alert on KMS API throttling
+      MetricName: Throttling
+      Namespace: AWS/KMS
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 10
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: KeyId
+          Value: !Ref KMSKeyId
+      AlarmActions:
+        - !Ref KMSAlarmTopic

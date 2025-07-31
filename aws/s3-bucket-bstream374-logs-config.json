@@ -1,0 +1,16 @@
+{
+  "BucketName": "bstream374-logs",
+  "Region": "ca-central-1",
+  "ObjectOwnership": "BucketOwnerEnforced",
+  "BlockPublicAccess": {
+    "BlockPublicAcls": true,
+    "IgnorePublicAcls": true,
+    "BlockPublicPolicy": true,
+    "RestrictPublicBuckets": true
+  },
+  "Versioning": "Enabled",
+  "DefaultEncryption": {
+    "EncryptionType": "SSE-S3",
+    "BucketKeyEnabled": true
+  }
+}

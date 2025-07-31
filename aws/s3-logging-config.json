@@ -1,0 +1,8 @@
+{
+    "LoggingEnabled": {
+        "TargetBucket": "bstream374-logs",
+        "TargetPrefix": "server-access-logs/",
+        "LogFormat": "analytics-optimized",
+        "TargetGrants": []
+    }
+}

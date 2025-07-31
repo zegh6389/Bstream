@@ -1,0 +1,62 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudWatch monitoring for S3 bucket 4xx errors using built-in S3 metrics.'
+
+Parameters:
+  EmailAddress:
+    Type: String
+    Description: 'Email address to receive alarm notifications.'
+  BucketName:
+    Type: String
+    Description: 'The name of the S3 bucket to monitor.'
+    Default: 'bstream374'
+
+Resources:
+  SnsTopicForS3Errors:
+    Type: 'AWS::SNS::Topic'
+    Properties:
+      TopicName: !Sub '${BucketName}-4xx-Errors-Notification-Topic'
+      Subscription:
+        - Endpoint: !Ref EmailAddress
+          Protocol: email
+
+  SnsTopicPolicyForS3Errors:
+    Type: 'AWS::SNS::TopicPolicy'
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: 'cloudwatch.amazonaws.com'
+            Action: 'sns:Publish'
+            Resource: !Ref SnsTopicForS3Errors
+      Topics:
+        - !Ref SnsTopicForS3Errors
+
+  S34xxErrorAlarm:
+    Type: 'AWS::CloudWatch::Alarm'
+    Properties:
+      AlarmName: !Sub '${BucketName}-High-4xx-Error-Rate'
+      AlarmDescription: 'Alarm when the S3 bucket 4xx error count is high.'
+      Namespace: 'AWS/S3'
+      MetricName: '4xxErrors'
+      Dimensions:
+        - Name: BucketName
+          Value: !Ref BucketName
+        - Name: FilterId
+          Value: 'EntireBucket' # This is required for the 4xxErrors metric
+      Statistic: Sum
+      Period: 300 # 5 minutes
+      EvaluationPeriods: 1
+      Threshold: 10
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      AlarmActions:
+        - !Ref SnsTopicForS3Errors
+      TreatMissingData: notBreaching
+
+Outputs:
+  SnsTopicArn:
+    Description: 'ARN of the SNS topic for notifications'
+    Value: !Ref SnsTopicForS3Errors
+  AlarmName:
+    Description: 'Name of the CloudWatch alarm'
+    Value: !Ref S34xxErrorAlarm

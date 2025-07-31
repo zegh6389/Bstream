@@ -1,0 +1,37 @@
+{
+  "Rules": [
+    {
+      "ID": "Archive Data Lifecycle",
+      "Status": "Enabled",
+      "Filter": {
+        "Prefix": "archive/"
+      },
+      "Transitions": [
+        {
+          "Days": 90,
+          "StorageClass": "STANDARD_IA"
+        },
+        {
+          "Days": 180,
+          "StorageClass": "GLACIER"
+        }
+      ]
+    },
+    {
+      "ID": "Backup Data Lifecycle",
+      "Status": "Enabled",
+      "Filter": {
+        "Prefix": "backup-"
+      },
+      "Transitions": [
+        {
+          "Days": 30,
+          "StorageClass": "STANDARD_IA"
+        }
+      ],
+      "Expiration": {
+        "Days": 90
+      }
+    }
+  ]
+}

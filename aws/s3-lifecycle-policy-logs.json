@@ -1,0 +1,21 @@
+{
+  "Rules": [
+    {
+      "ID": "LogRetentionPolicy",
+      "Status": "Enabled",
+      "Filter": {
+        "Prefix": "server-access-logs/"
+      },
+      "Transitions": [],
+      "Expiration": {
+        "Days": 365
+      },
+      "NoncurrentVersionExpiration": {
+        "NoncurrentDays": 30
+      },
+      "AbortIncompleteMultipartUpload": {
+        "DaysAfterInitiation": 7
+      }
+    }
+  ]
+}
