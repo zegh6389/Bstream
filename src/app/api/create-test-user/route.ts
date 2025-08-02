@@ -3,6 +3,14 @@ import { hash } from "bcryptjs"
 import { db } from "@/lib/db"
 
 export async function POST() {
+  // SECURITY: Disable test user creation in production
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json(
+      { error: "Test user creation disabled in production" },
+      { status: 403 }
+    )
+  }
+
   try {
     // Check if test user already exists
     const existingUser = await db.user.findUnique({

@@ -88,30 +88,42 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
+          console.log("Auth failed: Missing credentials")
           throw new Error("Invalid credentials")
         }
 
-        const user = await db.user.findUnique({
-          where: {
-            email: credentials.email,
-          },
-        })
+        console.log("Attempting to authenticate user:", credentials.email)
 
-        if (!user || !user.password) {
-          throw new Error("Invalid credentials")
+        try {
+          const user = await db.user.findUnique({
+            where: {
+              email: credentials.email,
+            },
+          })
+
+          if (!user || !user.password) {
+            console.log("Auth failed: User not found or no password set")
+            throw new Error("Invalid credentials")
+          }
+
+          const isValid = await bcrypt.compare(credentials.password, user.password)
+
+          if (!isValid) {
+            console.log("Auth failed: Invalid password")
+            throw new Error("Invalid credentials")
+          }
+
+          if (!user.emailVerified) {
+            console.log("Auth failed: Email not verified")
+            throw new Error("Please verify your email first")
+          }
+
+          console.log("Auth successful for user:", user.email)
+          return user
+        } catch (error) {
+          console.error("Database auth error:", error)
+          throw new Error("Authentication failed")
         }
-
-        const isValid = await bcrypt.compare(credentials.password, user.password)
-
-        if (!isValid) {
-          throw new Error("Invalid credentials")
-        }
-
-        if (!user.emailVerified) {
-          throw new Error("Please verify your email first")
-        }
-
-        return user
       },
     }),
   ],
