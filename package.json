@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "nodemon --exec \"npx tsx server.ts\" --watch server.ts --watch src --ext ts,tsx,js,jsx",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "NODE_ENV=production tsx server.ts",
     "lint": "next lint",
     "test": "rimraf ./prisma/test.db && cross-env DATABASE_URL=file:./prisma/test.db npx prisma db push && vitest",
@@ -22,7 +22,6 @@
     "aws:deploy:linux": "bash scripts/aws-deploy.sh",
     "aws:status": "powershell -ExecutionPolicy Bypass -File scripts/aws-status.ps1",
     "aws:status:linux": "bash scripts/aws-status.sh",
-    "aws:setup": "bash scripts/setup-aws.sh",
     "aws:health": "curl http://localhost:3000/api/health/aws"
   },
   "dependencies": {
@@ -136,6 +135,7 @@
     "@vitest/spy": "^3.2.4",
     "cross-env": "^10.0.0",
     "dotenv": "^17.2.1",
+    "drizzle-orm": "^0.33.0",
     "eslint": "^9",
     "eslint-config-next": "15.3.5",
     "ioredis-mock": "^8.9.0",
