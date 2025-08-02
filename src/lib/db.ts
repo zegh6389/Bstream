@@ -13,3 +13,6 @@ export const prisma =
   });
 
 if (process.env.NODE_ENV !== 'production') global.prisma = prisma;
+
+// Export as db for backward compatibility
+export const db = prisma;

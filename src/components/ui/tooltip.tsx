@@ -5,57 +5,123 @@ import * as TooltipPrimitive from "@radix-ui/react-tooltip"
 
 import { cn } from "@/lib/utils"
 
-function TooltipProvider({
-  delayDuration = 0,
+interface TooltipProviderProps extends React.ComponentProps<typeof TooltipPrimitive.Provider> {
+  delayDuration?: number
+  skipDelayDuration?: number
+  disableHoverableContent?: boolean
+}
+
+const TooltipProvider = React.memo<TooltipProviderProps>(({
+  delayDuration = 200, // More reasonable default delay
+  skipDelayDuration = 300,
+  disableHoverableContent = false,
   ...props
-}: React.ComponentProps<typeof TooltipPrimitive.Provider>) {
+}) => {
   return (
     <TooltipPrimitive.Provider
-      data-slot="tooltip-provider"
       delayDuration={delayDuration}
+      skipDelayDuration={skipDelayDuration}
+      disableHoverableContent={disableHoverableContent}
       {...props}
     />
   )
+})
+TooltipProvider.displayName = "TooltipProvider"
+
+// Global tooltip provider context for better performance
+const GlobalTooltipContext = React.createContext<boolean>(false)
+
+interface TooltipProps extends React.ComponentProps<typeof TooltipPrimitive.Root> {
+  delayDuration?: number
 }
 
-function Tooltip({
-  ...props
-}: React.ComponentProps<typeof TooltipPrimitive.Root>) {
+const Tooltip = React.memo<TooltipProps>(({ 
+  delayDuration,
+  ...props 
+}) => {
+  const hasGlobalProvider = React.useContext(GlobalTooltipContext)
+  
+  const tooltipRoot = React.useMemo(() => (
+    <TooltipPrimitive.Root {...props} />
+  ), [props])
+
+  if (hasGlobalProvider) {
+    return tooltipRoot
+  }
+
   return (
-    <TooltipProvider>
-      <TooltipPrimitive.Root data-slot="tooltip" {...props} />
+    <TooltipProvider delayDuration={delayDuration}>
+      <GlobalTooltipContext.Provider value={true}>
+        {tooltipRoot}
+      </GlobalTooltipContext.Provider>
     </TooltipProvider>
   )
+})
+Tooltip.displayName = "Tooltip"
+
+interface TooltipTriggerProps extends React.ComponentProps<typeof TooltipPrimitive.Trigger> {
+  asChild?: boolean
 }
 
-function TooltipTrigger({
-  ...props
-}: React.ComponentProps<typeof TooltipPrimitive.Trigger>) {
-  return <TooltipPrimitive.Trigger data-slot="tooltip-trigger" {...props} />
+const TooltipTrigger = React.forwardRef<
+  React.ElementRef<typeof TooltipPrimitive.Trigger>,
+  TooltipTriggerProps
+>(({ asChild = false, ...props }, ref) => (
+  <TooltipPrimitive.Trigger
+    ref={ref}
+    asChild={asChild}
+    {...props}
+  />
+))
+TooltipTrigger.displayName = "TooltipTrigger"
+
+interface TooltipContentProps extends React.ComponentProps<typeof TooltipPrimitive.Content> {
+  sideOffset?: number
+  hideArrow?: boolean
 }
 
-function TooltipContent({
+const TooltipContent = React.forwardRef<
+  React.ElementRef<typeof TooltipPrimitive.Content>,
+  TooltipContentProps
+>(({ 
   className,
-  sideOffset = 0,
+  sideOffset = 6, // Better default offset
+  hideArrow = false,
+  side = "top",
+  align = "center",
   children,
-  ...props
-}: React.ComponentProps<typeof TooltipPrimitive.Content>) {
-  return (
-    <TooltipPrimitive.Portal>
-      <TooltipPrimitive.Content
-        data-slot="tooltip-content"
-        sideOffset={sideOffset}
-        className={cn(
-          "bg-primary text-primary-foreground animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 w-fit origin-(--radix-tooltip-content-transform-origin) rounded-md px-3 py-1.5 text-xs text-balance",
-          className
-        )}
-        {...props}
-      >
-        {children}
-        <TooltipPrimitive.Arrow className="bg-primary fill-primary z-50 size-2.5 translate-y-[calc(-50%_-_2px)] rotate-45 rounded-[2px]" />
-      </TooltipPrimitive.Content>
-    </TooltipPrimitive.Portal>
-  )
-}
+  ...props 
+}, ref) => (
+  <TooltipPrimitive.Portal>
+    <TooltipPrimitive.Content
+      ref={ref}
+      side={side}
+      align={align}
+      sideOffset={sideOffset}
+      className={cn(
+        // Enhanced styling with better contrast and animations
+        "z-50 overflow-hidden rounded-md bg-primary px-3 py-1.5 text-xs text-primary-foreground",
+        "animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95",
+        "data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+        "shadow-md border border-border/5",
+        "max-w-xs break-words text-balance", // Better text wrapping
+        className
+      )}
+      // Accessibility improvements
+      role="tooltip"
+      {...props}
+    >
+      {children}
+      {!hideArrow && (
+        <TooltipPrimitive.Arrow 
+          className="fill-primary border-border/5" 
+          width={11} 
+          height={5} 
+        />
+      )}
+    </TooltipPrimitive.Content>
+  </TooltipPrimitive.Portal>
+))
+TooltipContent.displayName = "TooltipContent"
 
 export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider }

@@ -32,7 +32,6 @@ export async function createBackup(
 
   const data: Record<string, any[]> = {};
   for (const table of tables) {
-    // @ts-ignore
     data[table] = await prisma[table].findMany();
   }
 
@@ -125,12 +124,10 @@ export async function restoreBackup(
 
     await prisma.$transaction(async (tx) => {
       for (const table of backup.metadata.tables.reverse()) { // Delete in reverse order
-          // @ts-ignore
           await tx[table].deleteMany();
       }
       for (const table of backup.metadata.tables) { // Create in original order
         if (Array.isArray(backup.data[table]) && backup.data[table].length > 0) {
-          // @ts-ignore
           await tx[table].createMany({
             data: backup.data[table],
             skipDuplicates: true,

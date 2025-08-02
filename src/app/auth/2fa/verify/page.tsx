@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -20,9 +20,12 @@ const verifySchema = z.object({
     .regex(/^\d+$/, "Token must contain only numbers"),
 })
 
+// Force dynamic rendering to avoid build-time issues with useSearchParams
+export const dynamic = 'force-dynamic'
+
 type VerifyForm = z.infer<typeof verifySchema>
 
-export default function TwoFactorVerifyPage() {
+function TwoFactorVerifyContent() {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -125,5 +128,13 @@ export default function TwoFactorVerifyPage() {
         </CardFooter>
       </Card>
     </div>
+  )
+}
+
+export default function TwoFactorVerifyPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <TwoFactorVerifyContent />
+    </Suspense>
   )
 }

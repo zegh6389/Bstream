@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { sendPasswordResetEmail, resetPassword } from "@/lib/auth/email"
-import { resetLimiter, checkRateLimit } from "@/lib/rate-limit"
+import { resetLimiter, checkRateLimit } from "@/lib/rate-limit.new"
 
 export async function POST(req: Request) {
   try {

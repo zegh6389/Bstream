@@ -17,7 +17,6 @@ export async function exportTableToFormat(
   filter?: Record<string, any>
 ) {
   try {
-    // @ts-ignore - Dynamic table access
     const data = await prisma[table].findMany({ where: filter });
     
     let exportedData: Buffer | string;
@@ -92,7 +91,6 @@ export async function bulkImport(
       }
     }
 
-    // @ts-ignore - Dynamic table access
     const result = await prisma[table].createMany({
       data,
       skipDuplicates,
@@ -100,7 +98,7 @@ export async function bulkImport(
 
     await logAuditEvent(
       prisma,
-      AuditAction.BULK_IMPORT,
+      AuditAction.IMPORT,
       table,
       "",
       { recordCount: data.length, success: result.count }

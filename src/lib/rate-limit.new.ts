@@ -14,10 +14,19 @@ export interface RateLimitResult {
 
 function createLimiter(options: IRateLimiterOptions) {
   const isTest = process.env.NODE_ENV === 'test';
+  const isBuild = process.env.NODE_ENV === undefined;
   
-  return isTest 
-    ? new RateLimiterMemory(options)
-    : new RateLimiterRedis({ storeClient: redis, ...options });
+  // During build time, use memory limiter to avoid Redis connection issues
+  if (isTest || isBuild) {
+    return new RateLimiterMemory(options);
+  }
+  
+  try {
+    return new RateLimiterRedis({ storeClient: redis, ...options });
+  } catch (error) {
+    console.warn('Failed to create Redis rate limiter, falling back to memory:', error);
+    return new RateLimiterMemory(options);
+  }
 }
 
 export const authLimiter = createLimiter({
@@ -48,18 +57,28 @@ export const twoFactorLimiter = createLimiter({
   blockDuration: 60 * 15
 })
 
+// General purpose rate limiter for API endpoints
+export const rateLimiter = createLimiter({
+  keyPrefix: "rl_api",
+  points: 10,
+  duration: 60,
+  blockDuration: 60
+})
+
 export async function checkRateLimit(limiter: RateLimiterRedis | RateLimiterMemory, key: string): Promise<RateLimitResult> {
   try {
-    await limiter.consume(key)
+    const result = await limiter.consume(key)
     return {
       success: true,
       limit: limiter.points,
-      remaining: limiter.points - 1
+      remaining: result.remainingPoints
     }
   } catch (error) {
     const rateLimitError = error as RateLimitError
     return {
       success: false,
+      limit: limiter.points,
+      remaining: 0,
       retryAfter: Math.ceil(rateLimitError.msBeforeNext / 1000)
     }
   }

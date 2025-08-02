@@ -1,6 +1,6 @@
 'use client'
 import { motion } from 'framer-motion'
-import UserAuthForm from '@/components/UserAuthForm'
+import { AuthForm } from '@/components/auth-form'
 
 export default function TabletCard() {
   return (
@@ -16,8 +16,9 @@ export default function TabletCard() {
         className="absolute -top-16 left-1/2 -translate-x-1/2 h-24 w-24 rounded-full bg-white/20"
       />
       <div className="flex flex-col items-center space-y-4">
-        <h1 className="text-xl font-mono text-white">tablet</h1>
-        <UserAuthForm />
+        <h1 className="text-2xl font-bold text-white">Welcome</h1>
+        <p className="text-white/70 text-center">Sign in to continue</p>
+        <AuthForm className="w-full" />
       </div>
     </motion.div>
   )

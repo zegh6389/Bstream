@@ -12,10 +12,20 @@ export interface RateLimitResult {
 }
 
 function createLimiter(options: IRateLimiterOptions) {
-  const isTest = process.env.NODE_ENV === 'test'
-  return isTest 
-    ? new RateLimiterMemory(options)
-    : new RateLimiterRedis({ storeClient: globalThis.redis, ...options })
+  const isTest = process.env.NODE_ENV === 'test';
+  const isBuild = process.env.NODE_ENV === undefined;
+  
+  // During build time or test, use memory limiter to avoid Redis connection issues
+  if (isTest || isBuild || !globalThis.redis) {
+    return new RateLimiterMemory(options);
+  }
+  
+  try {
+    return new RateLimiterRedis({ storeClient: globalThis.redis, ...options });
+  } catch (error) {
+    console.warn('Failed to create Redis rate limiter, falling back to memory:', error);
+    return new RateLimiterMemory(options);
+  }
 }
 
 export const authLimiter = createLimiter({

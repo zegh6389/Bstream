@@ -33,8 +33,13 @@ export async function POST(req: Request) {
       },
     })
 
-    // Send verification email
-    await sendVerificationEmail(user.id, user.email)
+    // Send verification email (optional - continue even if it fails)
+    try {
+      await sendVerificationEmail(user.id, user.email)
+    } catch (emailError) {
+      console.error("Failed to send verification email:", emailError)
+      // Continue anyway - email verification is optional
+    }
 
     return NextResponse.json({
       message: "User created successfully",

@@ -1,3 +1,4 @@
+'use client'
 import dynamic from 'next/dynamic'
 import useBreakpoint from '@/hooks/useBreakpoint'
 

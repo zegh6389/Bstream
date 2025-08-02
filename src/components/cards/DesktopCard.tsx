@@ -2,7 +2,7 @@
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls, Sphere } from '@react-three/drei'
 import { motion } from 'framer-motion'
-import UserAuthForm from '@/components/UserAuthForm'
+import { AuthForm } from '@/components/auth-form'
 
 export default function DesktopCard() {
   return (
@@ -19,9 +19,10 @@ export default function DesktopCard() {
         </Sphere>
         <OrbitControls enableZoom={false} autoRotate autoRotateSpeed={1} />
       </Canvas>
-      <div className="relative z-10 flex flex-col items-center space-y-4">
-        <h1 className="text-2xl font-mono text-white">desktop</h1>
-        <UserAuthForm />
+      <div className="relative z-10 flex flex-col items-center space-y-6">
+        <h1 className="text-3xl font-bold text-white">Welcome Back</h1>
+        <p className="text-white/70 text-center">Sign in to your account to continue</p>
+        <AuthForm className="w-full" />
       </div>
     </motion.div>
   )

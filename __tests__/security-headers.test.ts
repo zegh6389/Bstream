@@ -35,7 +35,7 @@ describe('Security Headers', () => {
     expect(mockResponse.headers.get('X-Content-Type-Options')).toBe('nosniff');
     expect(mockResponse.headers.get('X-Frame-Options')).toBe('DENY');
     expect(mockResponse.headers.get('X-XSS-Protection')).toBe('1; mode=block');
-    expect(mockResponse.headers.get('Referrer-Policy')).toBe('same-origin');
+    expect(mockResponse.headers.get('Referrer-Policy')).toBe('strict-origin-when-cross-origin');
   });
 
   test('should include nonce in response headers', () => {

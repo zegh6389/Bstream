@@ -22,7 +22,6 @@ export async function archiveData(
 
   try {
     // Fetch data to archive
-    // @ts-ignore - Dynamic table access
     const data = await prisma[table].findMany({
       where: filter,
     });
@@ -61,7 +60,6 @@ export async function archiveData(
 
     // Delete archived data if requested
     if (deleteAfterArchive) {
-      // @ts-ignore - Dynamic table access
       await prisma[table].deleteMany({
         where: filter,
       });
@@ -121,7 +119,6 @@ export async function restoreFromArchive(
     const { metadata, data } = JSON.parse(archiveContent);
 
     // Restore data to the database
-    // @ts-ignore - Dynamic table access
     await prisma[metadata.table].createMany({
       data,
       skipDuplicates: true,

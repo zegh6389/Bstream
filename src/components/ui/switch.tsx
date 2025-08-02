@@ -5,27 +5,101 @@ import * as SwitchPrimitive from "@radix-ui/react-switch"
 
 import { cn } from "@/lib/utils"
 
-function Switch({
-  className,
-  ...props
-}: React.ComponentProps<typeof SwitchPrimitive.Root>) {
+interface SwitchProps extends React.ComponentProps<typeof SwitchPrimitive.Root> {
+  /**
+   * Size variant of the switch
+   */
+  size?: "default" | "sm" | "lg"
+  /**
+   * Icon to display when switch is off
+   */
+  offIcon?: React.ReactNode
+  /**
+   * Icon to display when switch is on
+   */
+  onIcon?: React.ReactNode
+  /**
+   * Accessible label for the switch when no visible label is present
+   */
+  "aria-label"?: string
+}
+
+const Switch = React.forwardRef<
+  React.ElementRef<typeof SwitchPrimitive.Root>,
+  SwitchProps
+>(({ 
+  className, 
+  size = "default", 
+  offIcon, 
+  onIcon,
+  disabled,
+  ...props 
+}, ref) => {
+  const sizeClasses = {
+    sm: "h-4 w-7",
+    default: "h-5 w-9",
+    lg: "h-6 w-11",
+  }
+
+  const thumbSizeClasses = {
+    sm: "size-3",
+    default: "size-4",
+    lg: "size-5",
+  }
+
+  const translateClasses = {
+    sm: "data-[state=checked]:translate-x-3",
+    default: "data-[state=checked]:translate-x-4",
+    lg: "data-[state=checked]:translate-x-5",
+  }
+
   return (
     <SwitchPrimitive.Root
-      data-slot="switch"
+      ref={ref}
+      disabled={disabled}
       className={cn(
-        "peer data-[state=checked]:bg-primary data-[state=unchecked]:bg-input focus-visible:border-ring focus-visible:ring-ring/50 dark:data-[state=unchecked]:bg-input/80 inline-flex h-[1.15rem] w-8 shrink-0 items-center rounded-full border border-transparent shadow-xs transition-all outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50",
+        [
+          "peer inline-flex shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent",
+          "shadow-sm transition-colors duration-200 ease-in-out",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+          // State-based styling
+          "data-[state=checked]:bg-primary data-[state=unchecked]:bg-input",
+          "hover:data-[state=unchecked]:bg-input/80 hover:data-[state=checked]:bg-primary/90",
+          // Disabled state
+          "disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-input disabled:data-[state=checked]:hover:bg-primary"
+        ],
+        sizeClasses[size],
         className
       )}
       {...props}
     >
       <SwitchPrimitive.Thumb
-        data-slot="switch-thumb"
         className={cn(
-          "bg-background dark:data-[state=unchecked]:bg-foreground dark:data-[state=checked]:bg-primary-foreground pointer-events-none block size-4 rounded-full ring-0 transition-transform data-[state=checked]:translate-x-[calc(100%-2px)] data-[state=unchecked]:translate-x-0"
+          [
+            "pointer-events-none block rounded-full bg-background shadow-sm ring-0",
+            "transition-transform duration-200 ease-in-out",
+            "data-[state=unchecked]:translate-x-0",
+            "flex items-center justify-center"
+          ],
+          thumbSizeClasses[size],
+          translateClasses[size]
         )}
-      />
+      >
+        {/* Conditional icon rendering */}
+        {(onIcon || offIcon) && (
+          <span className="flex items-center justify-center text-xs">
+            <span className="data-[state=checked]:hidden">
+              {offIcon}
+            </span>
+            <span className="data-[state=unchecked]:hidden">
+              {onIcon}
+            </span>
+          </span>
+        )}
+      </SwitchPrimitive.Thumb>
     </SwitchPrimitive.Root>
   )
-}
+})
+Switch.displayName = "Switch"
 
-export { Switch }
+export { Switch, type SwitchProps }

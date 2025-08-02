@@ -14,7 +14,8 @@ export function setSecurityHeaders(request: NextRequest, response: NextResponse)
     "default-src 'none'",
     // Allow self-hosted resources
     "script-src 'self' 'strict-dynamic' 'nonce-" + nonce + "'",
-    "style-src 'self' 'unsafe-inline'",
+    // Remove 'unsafe-inline' for better security
+    "style-src 'self'",
     // Allow images from self and data URIs (for avatars etc)
     "img-src 'self' data: blob: https:",
     // Allow AJAX calls to our API
@@ -30,28 +31,26 @@ export function setSecurityHeaders(request: NextRequest, response: NextResponse)
     // Media
     "media-src 'self'",
     // Manifest
-    "manifest-src 'self'"
+    "manifest-src 'self'",
+    // Explicitly block object/embed
+    "object-src 'none'"
   ].join('; ');
 
   const headers = {
     // Content Security Policy
     'Content-Security-Policy': csp,
-    
+    // Enforce HTTPS
+    'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
     // Prevent browsers from incorrectly detecting non-scripts as scripts
     'X-Content-Type-Options': 'nosniff',
-    
     // Don't allow being embedded in iframes
     'X-Frame-Options': 'DENY',
-    
-    // Enable browser XSS filtering
+    // Enable browser XSS filtering (optional, mostly obsolete)
     'X-XSS-Protection': '1; mode=block',
-    
-    // Disable client-side caching for sensitive pages
+    // NOTE: Consider applying Cache-Control only to sensitive endpoints, not globally
     'Cache-Control': 'no-store, max-age=0',
-    
-    // Only send referrer header to same origin
-    'Referrer-Policy': 'same-origin',
-    
+    // Only send referrer header to strict origin when cross-origin
+    'Referrer-Policy': 'strict-origin-when-cross-origin',
     // Required for Feature-Policy
     'Permissions-Policy': 'accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()'
   };
