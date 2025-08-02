@@ -32,20 +32,6 @@ export const authOptions: NextAuthOptions = {
     verifyRequest: "/auth/verify",
     newUser: "/auth/new-user",
   },
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.isAdmin = user.isAdmin ?? false
-      }
-      return token
-    },
-    async session({ session, token }) {
-      if (session.user) {
-        session.user.isAdmin = token.isAdmin as boolean
-      }
-      return session
-    },
-  },
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -136,11 +122,16 @@ export const authOptions: NextAuthOptions = {
 
       // For credentials, check email verification and 2FA
       if (account?.provider === "credentials") {
-        if (!user.emailVerified) {
+        // If the user object is not available, it means authorize failed
+        if (!user) {
+          return false
+        }
+        
+        if (!(user as any).emailVerified) {
           throw new Error("Please verify your email first")
         }
 
-        if (user.twoFactorEnabled) {
+        if ((user as any).twoFactorEnabled) {
           // Redirect to 2FA verification
           return `/auth/2fa/verify?callbackUrl=${encodeURIComponent("/dashboard")}`
         }
@@ -165,7 +156,7 @@ export const authOptions: NextAuthOptions = {
         token.email = user.email
         token.name = user.name
         token.picture = user.image
-        token.emailVerified = user.emailVerified
+        token.emailVerified = (user as any).emailVerified
         token.isAdmin = (user as any).isAdmin ?? false
       }
 
